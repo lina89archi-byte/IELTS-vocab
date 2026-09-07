@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>IELTS 词汇通关</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #e8f5e9;
+      padding: 12px;
+      min-height: 100vh;
+    }
+    .container { max-width: 100%; }
+    .header {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .header h1 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 8px;
+      font-size: 11px;
+    }
+    .stat-box {
+      background: #f9f9f9;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .stat-num { font-size: 16px; font-weight: 700; color: #667eea; }
+    .stat-label { color: #999; margin-top: 2px; }
+    .game-box {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .game-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+    .word-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .col-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #999;
+    }
+    .btn {
+      padding: 14px;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn.selected {
+      border-color: #667eea;
+      background: #f0f4ff;
+      font-weight: 600;
+    }
+    .btn.matched {
+      border-color: #4CAF50;
+      background: #e8f5e9;
+      color: #2e7d32;
+      cursor: not-allowed;
+    }
+    .feedback {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      height: 30px;
+      margin-bottom: 12px;
+    }
+    .feedback.correct { color: #4CAF50; }
+    .feedback.error { color: #f44336; }
+    .progress-box {
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .progress-box .num { font-size: 20px; color: #667eea; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>IELTS 词汇通关</h1>
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-num" id="day">1</div>
+        <div class="stat-label">第几天</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="today">0/30</div>
+        <div class="stat-label">今日</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="left">104</div>
+        <div class="stat-label">剩余天</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="total">0</div>
+        <div class="stat-label">掌握</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-box">
+    <div class="game-title" id="title">第1天 - 第1组</div>
+    <div id="msg" class="feedback"></div>
+    
+    <div class="word-grid">
+      <div class="column">
+        <div class="col-label">中文</div>
+        <div id="chCol"></div>
+      </div>
+      <div class="column">
+        <div class="col-label">English</div>
+        <div id="enCol"></div>
+      </div>
+    </div>
+
+    <div class="progress-box">
+      <div id="prog">0/5</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const allWords = [
+  {ch: '促进', en: 'promote'}, {ch: '假设', en: 'assume'}, {ch: '维持', en: 'maintain'},
+  {ch: '获得', en: 'acquire'}, {ch: '分析', en: 'analyze'}, {ch: '显著', en: 'remarkable'},
+  {ch: '应用', en: 'apply'}, {ch: '评价', en: 'evaluate'}, {ch: '挑战', en: 'challenge'},
+  {ch: '因素', en: 'factor'}, {ch: '贡献', en: 'contribute'}, {ch: '解决', en: 'resolve'},
+  {ch: '利益', en: 'benefit'}, {ch: '障碍', en: 'obstacle'}, {ch: '目标', en: 'objective'},
+  {ch: '强调', en: 'emphasize'}, {ch: '组织', en: 'organize'}, {ch: '概念', en: 'concept'},
+  {ch: '反映', en: 'reflect'}, {ch: '复杂', en: 'complex'}, {ch: '有效', en: 'effective'},
+  {ch: '资源', en: 'resource'}, {ch: '变化', en: 'variation'}, {ch: '环境', en: 'environment'},
+  {ch: '发展', en: 'development'}, {ch: '优势', en: 'advantage'}, {ch: '约束', en: 'constraint'},
+  {ch: '模式', en: 'pattern'}, {ch: '深化', en: 'deepen'}, {ch: '衰落', en: 'decline'}
+];
+
+let idx = 0;
+let matched = new Set();
+let selected = [];
+let daily = 0;
+let englishOrder = [];
+let audioCtx = null;
+
+// 初始化音频上下文
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+// 咚咚声
+function playDing() {
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.frequency.value = 600;
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0, audioCtx.currentTime + 0.1);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.1);
+}
+
+// 哦吼声
+function playOhYeah() {
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+  osc.frequency.setValueAtTime(700, audioCtx.currentTime + 0.2);
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0, audioCtx.currentTime + 0.4);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.4);
+}
+
+// WOW声
+function playWow() {
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+  osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.15);
+  osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.3);
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0, audioCtx.currentTime + 0.5);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.5);
+}
+
+function getSet() {
+  return allWords.slice(idx, idx + 5);
+}
+
+function initEnglish() {
+  englishOrder = [...getSet()].sort(() => Math.random() - 0.5);
+}
+
+function render() {
+  const set = getSet();
+  const chCol = document.getElementById('chCol');
+  const enCol = document.getElementById('enCol');
+  chCol.innerHTML = '';
+  enCol.innerHTML = '';
+
+  for (let i = 0; i < 5; i++) {
+    const w = set[i];
+    const btn = document.createElement('div');
+    btn.className = 'btn';
+    btn.textContent = w.ch;
+    
+    if (matched.has(i)) btn.classList.add('matched');
+    if (selected.includes(i)) btn.classList.add('selected');
+    
+    btn.onclick = () => {
+      if (!matched.has(i)) {
+        selectCh(i);
+      }
+    };
+    
+    chCol.appendChild(btn);
+  }
+
+  for (let i = 0; i < 5; i++) {
+    const w = englishOrder[i];
+    const chIdx = set.findIndex(x => x.en === w.en);
+    const btn = document.createElement('div');
+    btn.className = 'btn';
+    btn.textContent = w.en;
+    
+    if (matched.has(chIdx)) btn.classList.add('matched');
+    if (selected.includes(5 + i)) btn.classList.add('selected');
+    
+    btn.onclick = () => {
+      if (!matched.has(chIdx)) {
+        selectEn(i, chIdx);
+      }
+    };
+    
+    enCol.appendChild(btn);
+  }
+  
+  updateStats();
+}
+
+function updateStats() {
+  const set = getSet();
+  const day = Math.floor(idx / 5) + 1;
+  document.getElementById('title').textContent = `第 ${day} 天 - 第 ${(idx % 10 / 5) + 1 | 0} 组`;
+  document.getElementById('day').textContent = day;
+  document.getElementById('today').textContent = daily + '/30';
+  document.getElementById('total').textContent = Math.floor(idx / 5) * 5 + daily;
+  document.getElementById('prog').textContent = matched.size + '/5';
+}
+
+function selectCh(i) {
+  if (selected.includes(i)) {
+    selected = selected.filter(x => x !== i);
+  } else {
+    selected.push(i);
+  }
+  if (selected.length === 2) check();
+  else render();
+}
+
+function selectEn(i, chIdx) {
+  if (selected.includes(5 + i)) {
+    selected = selected.filter(x => x !== (5 + i));
+  } else {
+    selected.push(5 + i);
+  }
+  if (selected.length === 2) check();
+  else render();
+}
+
+function check() {
+  const set = getSet();
+  let chIdx, enIdx;
+  
+  if (selected[0] < 5) {
+    chIdx = selected[0];
+    enIdx = selected[1] - 5;
+  } else {
+    chIdx = selected[1];
+    enIdx = selected[0] - 5;
+  }
+  
+  if (set[chIdx].en === englishOrder[enIdx].en) {
+    matched.add(chIdx);
+    daily++;
+    playDing();
+    document.getElementById('msg').textContent = '✓ 正确！';
+    document.getElementById('msg').className = 'feedback correct';
+    selected = [];
+    
+    if (matched.size === 5) {
+      setTimeout(() => {
+        playOhYeah();
+        if (daily >= 30) {
+          document.getElementById('msg').textContent = '🏆 今天完成！';
+          setTimeout(() => {
+            playWow();
+            idx = Math.ceil(idx / 10) * 10;
+            daily = 0;
+            matched.clear();
+            initEnglish();
+            document.getElementById('msg').textContent = '';
+            render();
+          }, 600);
+        } else {
+          idx += 5;
+          matched.clear();
+          initEnglish();
+          document.getElementById('msg').textContent = '';
+          render();
+        }
+      }, 300);
+    } else {
+      setTimeout(() => {
+        document.getElementById('msg').textContent = '';
+        render();
+      }, 300);
+    }
+  } else {
+    document.getElementById('msg').textContent = '✗ 再试试';
+    document.getElementById('msg').className = 'feedback error';
+    setTimeout(() => {
+      selected = [];
+      document.getElementById('msg').textContent = '';
+      render();
+    }, 400);
+  }
+}
+
+initEnglish();
+render();
+</script>
+</body>
+</html>
